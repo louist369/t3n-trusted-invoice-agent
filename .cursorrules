@@ -1,0 +1,15 @@
+# Building with Terminal 3 ADK (this repo)
+
+This project already exists. Do not re-scaffold. Follow the official skill at
+https://docs.terminal3.io/developers/adk/support/ai-coding-assistants.md with
+these repo-specific overrides:
+
+1. `setEnvironment("sandbox")` and `fetchTrustedManifest("sandbox")` — not production.
+   Official walkthrough snippets still say `"testnet"`; both names hit the same node.
+2. Never write `T3N_API_KEY` or `STRIPE_SECRET_KEY` into source. Never print raw keys.
+3. Invoice payloads may only contain vendor, amount, currency, due_date, memo.
+4. Stripe keys must be `sk_test_`. Refuse `sk_live_`.
+5. TEE contract lives in `contracts/` (WIT vendored from Terminal-3/z-tenant-flight).
+6. If the installed SDK types disagree with docs.terminal3.io, trust the SDK and
+   append a note to `docs/DX_AND_BUGS.md`.
+7. Check `docs/DX_AND_BUGS.md` before inventing a workaround.

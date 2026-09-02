@@ -1,0 +1,10 @@
+.env
+node_modules/
+dist/
+target/
+.t3n-state.json
+agent-card.json
+*.wasm
+.DS_Store
+cargo-target/
+contracts/target/

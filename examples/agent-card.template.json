@@ -1,0 +1,16 @@
+{
+  "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
+  "name": "Trusted Invoice Pay",
+  "description": "Finance-team agent: invoice intake, USD policy check, TEE-backed Stripe TEST payment, audit row. No bank numbers in the prompt.",
+  "services": [
+    {
+      "name": "DID",
+      "endpoint": "did:t3n:REPLACE_WITH_WHOAMI",
+      "version": "v1"
+    }
+  ],
+  "x402Support": false,
+  "active": true,
+  "registrations": [],
+  "supportedTrust": ["tee-attestation"]
+}

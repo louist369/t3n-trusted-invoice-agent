@@ -1,0 +1,35 @@
+{
+  "name": "t3n-trusted-invoice-agent",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Trusted invoice-pay agent for a small finance team, built on Terminal 3 T3N (sandbox).",
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "quickstart": "tsx src/quickstart.ts",
+    "agent": "tsx src/agent.ts",
+    "build:contract": "bash scripts/build.sh",
+    "register": "tsx scripts/register.ts",
+    "invoke": "tsx scripts/invoke.ts",
+    "pause": "tsx scripts/pause.ts",
+    "test": "tsx --test src/invoice.test.ts && cargo test --manifest-path contracts/Cargo.toml --target x86_64-unknown-linux-gnu"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/louist369/t3n-trusted-invoice-agent.git"
+  },
+  "keywords": [
+    "t3n",
+    "terminal3",
+    "tee",
+    "invoice",
+    "agent"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@terminal3/t3n-sdk": "^5.7.0",
+    "tsx": "^4.20.5"
+  }
+}

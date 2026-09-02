@@ -1,0 +1,45 @@
+/// z-invoice-pay — trusted invoice payment for a small finance team.
+///
+/// Host imports are the capability set (no separate manifest):
+///   - tenant-context:        tenant DID + cluster seq for audit ids
+///   - logging:               enclave log lines (never secrets)
+///   - kv-store:              secrets / policy / vendors / audit maps
+///   - http-with-placeholders: Stripe TEST call; profile markers only
+///
+/// `{{secrets.*}}` is rejected by the host (placeholder-denied). The Stripe
+/// key is therefore read from z:<tid>:secrets via kv-store, matching
+/// https://docs.terminal3.io/developers/adk/tips/seed-api-key.md
+/// Bank/account numbers never appear in function input.
+package z:invoice-pay@0.1.0;
+
+world invoice-pay {
+    import host:tenant/tenant-context@1.0.0;
+    import host:interfaces/logging@2.1.0;
+    import host:interfaces/kv-store@2.1.0;
+    import host:interfaces/http-with-placeholders@2.1.0;
+
+    export contracts;
+}
+
+interface contracts {
+    record generic-input {
+        input:        option<list<u8>>,
+        user-profile: option<list<u8>>,
+        context:      option<list<u8>>,
+    }
+
+    /// Policy check only. Input: { vendor, amount, currency, due_date, memo }
+    evaluate-policy: func(req: generic-input) -> result<list<u8>, string>;
+
+    /// Persist a pending/auto-approved proposal + audit row. Same input shape.
+    propose-payment: func(req: generic-input) -> result<list<u8>, string>;
+
+    /// Human approval above the USD threshold. Input: { proposal_id, approver }
+    approve-payment: func(req: generic-input) -> result<list<u8>, string>;
+
+    /// TEE-backed Stripe TEST PaymentIntent. Input: { proposal_id }
+    execute-payment: func(req: generic-input) -> result<list<u8>, string>;
+
+    /// Read one audit row. Input: { proposal_id }
+    get-audit:       func(req: generic-input) -> result<list<u8>, string>;
+}

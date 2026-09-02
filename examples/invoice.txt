@@ -1,0 +1,5 @@
+Vendor: Northwind Paper
+Amount: 40.00
+Currency: USD
+Due date: 2026-10-01
+Memo: Toner cartridges
