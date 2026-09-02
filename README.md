@@ -21,6 +21,18 @@ Invoice payment is the same class of problem as T3’s payroll / procurement sto
 
 We implement against the public ADK docs and the **installed** `@terminal3/t3n-sdk` types. Where those disagree, the SDK wins and the mismatch is in [`docs/DX_AND_BUGS.md`](docs/DX_AND_BUGS.md).
 
+## Known live blocker
+
+On 2026-09-02, `npx tsx src/quickstart.ts` with a real claimed sandbox `T3N_API_KEY` died **before handshake** on `@terminal3/t3n-sdk@5.7.0` (Node 20.19.2):
+
+```
+Error: Trust manifest at https://cn-api.sg.testnet.t3n.terminal3.io/api/trust-manifest is malformed.
+```
+
+`fetchTrustedManifest("sandbox")` and `fetchTrustedManifest("testnet")` both throw. The URL is HTTP 200 JSON (518 bytes) with `cluster`, `version`, `peer_ids`, `rtmr3_allowlist`, `signed_at`, `signature` — and **no** `rtmr1_allowlist`, which the SDK types require. This is not a missing-key problem. We did not fake a successful authenticate. Details: [`docs/DX_AND_BUGS.md`](docs/DX_AND_BUGS.md).
+
+The rest of the repo (invoice parse, policy, TEE contract, register/invoke scripts) is still the intended architecture once T3 republishes a manifest 5.7.0 will accept.
+
 ## Architecture
 
 ```mermaid

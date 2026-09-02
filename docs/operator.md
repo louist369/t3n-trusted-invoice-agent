@@ -9,7 +9,7 @@ A finance-team invoice agent on Terminal 3 sandbox. The TypeScript process parse
 ## Daily loop
 
 1. Confirm `T3N_API_KEY` is in the environment (never print it).
-2. `npx tsx src/quickstart.ts` — must print `did:t3n:<8 hex>…` and `TenantClient ready.`
+2. `npx tsx src/quickstart.ts` — must print `did:t3n:<8 hex>…` and `TenantClient ready.` As of 2026-09-02 this throws `Trust manifest … is malformed` on SDK 5.7.0 before handshake (see `docs/DX_AND_BUGS.md`). Do not bypass with `unsafe_trust_server`.
 3. Intake: `npx tsx src/agent.ts --invoice path/to/invoice.json`
 4. If the decision is `needs_approval`, a human re-runs with `--approve`.
 5. `execute-payment` needs a seeded `sk_test_` key and a finance-user profile email (`{{profile.verified_contacts.email.value}}`).

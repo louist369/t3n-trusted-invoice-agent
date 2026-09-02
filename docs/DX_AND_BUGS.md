@@ -2,6 +2,43 @@
 
 Honest notes from implementing this repo against the public docs and `@terminal3/t3n-sdk@5.7.0` (installed 2026-09-02). Judges: this file is part of the submission, not a complaint.
 
+## Live blocker: `fetchTrustedManifest` calls a 200 JSON body “malformed”
+
+**This is the bug that stops the official Quickstart.** A judge-style run on **2026-09-02** of `npx tsx src/quickstart.ts` with a real claimed sandbox `T3N_API_KEY` failed **before handshake**. No DID was issued. This repo does not fake a successful authenticate around it.
+
+| Item | Value |
+|---|---|
+| Date | 2026-09-02 |
+| Command | `npx tsx src/quickstart.ts` (also a direct `fetchTrustedManifest` probe) |
+| SDK | `@terminal3/t3n-sdk@5.7.0` |
+| Node | 20.19.2 (judge machine) and 22.14.0 (this agent VM, same throw) |
+| Cluster aliases | `fetchTrustedManifest("sandbox")` **and** `fetchTrustedManifest("testnet")` |
+| Error | `Trust manifest at https://cn-api.sg.testnet.t3n.terminal3.io/api/trust-manifest is malformed.` |
+
+The URL is public (no API key). A `GET` returns **HTTP 200**, `content-type: application/json`, **518 bytes**. Top-level fields observed:
+
+| Field | Observed |
+|---|---|
+| `cluster` | `"testnet"` (even when the client asked for `"sandbox"` — same node) |
+| `version` | `1787800421` (number) |
+| `peer_ids` | 3 `Qm…` strings |
+| `rtmr3_allowlist` | one base64-ish string |
+| `signed_at` | `2026-08-27T03:13:41Z` |
+| `signature` | 128 hex chars |
+| `rtmr1_allowlist` | **absent** |
+
+SDK types for `SignedTrustManifest` / `TrustAnchor` (`node_modules/@terminal3/t3n-sdk/dist/index.d.ts`) require `rtmr1_allowlist: string[]` and document it as the real image pin (`TrustAnchor.rtmr1_allowlist` “Must be non-empty”). `rtmr3_allowlist` is called backward-compat only. The published sandbox/testnet document has RTMR3 + signature but no RTMR1 list, so 5.7.0 rejects the body as malformed instead of verifying the signature.
+
+Docs that tell you this call is the first step, with no mention of the failure:
+
+- https://docs.terminal3.io/developers/adk/get-started/quickstart.md
+- https://docs.terminal3.io/developers/adk/reference.md
+- SDK README example: `fetchTrustedManifest("sandbox")`
+
+`resolveTrustAnchor` is documented as falling back to `{ unsafe_trust_server: true }` only when the SDK has **no pinned operator key** for that environment. Sandbox/testnet *are* provisioned (the fetch runs and then throws), so the helper does **not** degrade — it hard-fails. We did not switch the agent to `unsafe_trust_server`. That would skip attestation and is the wrong fix for a contest about TEE trust.
+
+**Not a key problem.** The throw happens in `fetchTrustedManifest` with no private key on the stack. Both env aliases share `https://cn-api.sg.testnet.t3n.terminal3.io` (see below), so flipping `setEnvironment("testnet")` does not help.
+
 ## Environment name: `sandbox` vs `testnet`
 
 **Challenge / this repo:** `setEnvironment("sandbox")`.
@@ -72,9 +109,9 @@ https://docs.terminal3.io/developers/adk/get-started/walkthrough/register-contra
 
 https://docs.terminal3.io/developers/adk/overview/agent-auth-adk.md and common-errors: an agent DID starts at zero credits. Reusing `T3N_API_KEY` for a separate agent identity is the usual `InsufficientCreditError`. This repo’s 15-minute path uses a **self-grant** (tenant DID as agent) unless `AGENT_KEY` / `USER_KEY` are set. Production handover should claim a second key.
 
-## No `T3N_API_KEY` in this build VM
+## Live authenticate did not complete (do not invent a DID)
 
-The environment had no `T3N_API_KEY`, `AGENT_KEY`, or `STRIPE_SECRET_KEY`. Per the brief we still shipped complete scripts. Live `npx tsx src/quickstart.ts` / register / invoke must be run by a judge or operator with a claimed key (https://www.terminal3.io/claim-page). We will attach sanitized DID-prefix logs here if a key is added later.
+A claimed sandbox key *was* used on 2026-09-02 for a judge-style `quickstart`. It never reached `handshake()` / `authenticate()` because of the trust-manifest bug above. This agent VM still has no key in its environment, and we will not commit `.env` or paste a key. There is therefore **no sanitized `did:t3n:…` log to attach** — attaching one would be fake.
 
 ## Other friction (no crash, just cost)
 
