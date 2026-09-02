@@ -1,0 +1,7 @@
+{
+  "vendor": "Acme Supplies",
+  "amount": "125.00",
+  "currency": "USD",
+  "due_date": "2026-09-15",
+  "memo": "Office paper Q3"
+}
